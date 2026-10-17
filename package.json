@@ -1,0 +1,32 @@
+{
+  "name": "progree_secure_rest_api_engine",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/imtiazaly/Progree_secure_rest_api_engine.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "bugs": {
+    "url": "https://github.com/imtiazaly/Progree_secure_rest_api_engine/issues"
+  },
+  "homepage": "https://github.com/imtiazaly/Progree_secure_rest_api_engine#readme",
+  "dependencies": {
+    "@prisma/client": "^7.10.1",
+    "bcryptjs": "^3.0.3",
+    "cors": "^2.8.6",
+    "dotenv": "^18.0.8",
+    "express": "^5.3.0",
+    "express-rate-limit": "^8.7.1",
+    "helmet": "^8.3.0",
+    "jsonwebtoken": "^9.0.3",
+    "zod": "^4.6.7"
+  }
+}
