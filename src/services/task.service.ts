@@ -75,18 +75,18 @@ export class TaskService {
     });
   }
 
-  static async getTasks(query: QueryTasksInput, user: CurrentUser) {
-    const {
-      page,
-      limit,
-      projectId,
-      status,
-      priority,
-      search,
-      sortBy,
-      sortOrder,
-    } = query;
+  static async getTasks(query: any, user: CurrentUser) {
+    const page = Math.max(1, parseInt(String(query.page || 1), 10));
+    const limit = Math.max(
+      1,
+      Math.min(100, parseInt(String(query.limit || 10), 10)),
+    );
+    const sortBy = (query.sortBy as string) || "createdAt";
+    const sortOrder: "asc" | "desc" =
+      query.sortOrder === "asc" ? "asc" : "desc";
     const skip = (page - 1) * limit;
+
+    const { projectId, status, priority, search } = query;
 
     const where: Prisma.TaskWhereInput = {
       isDeleted: false,
