@@ -1,18 +1,18 @@
-# 🛡️ Secure RESTful CRUD API Engine with Relational Database
+# Secure RESTful CRUD API Engine with Relational Database
 
-### _Progree Backend Development Internship — Task 2_
+### *Progree Backend Development Internship — Task 2*
 
 [![TypeScript](https://img.shields.io/badge/TypeScript-5.x-blue.svg?logo=typescript)](https://www.typescriptlang.org/)
 [![Node.js](https://img.shields.io/badge/Node.js-v18+-green.svg?logo=node.js)](https://nodejs.org/)
 [![Express.js](https://img.shields.io/badge/Express.js-5.x-lightgrey.svg?logo=express)](https://expressjs.com/)
 [![PostgreSQL](https://img.shields.io/badge/PostgreSQL-14+-blue.svg?logo=postgresql)](https://www.postgresql.org/)
 [![Prisma ORM](https://img.shields.io/badge/Prisma-6.x-indigo.svg?logo=prisma)](https://www.prisma.io/)
-[![Zod](https://img.shields.io/badge/Validation-Zod_v4-brightgreen.svg?logo=zod)](https://zod.dev/)
+[![Zod](https://img.shields.io/badge/Validation-Zod_v4-brightgreen)](https://zod.dev/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 
 ---
 
-## 📌 Executive Overview
+## Executive Overview
 
 This repository contains the production-grade implementation of **Task 2: Secured RESTful CRUD API Server with Relational Database** for the **Progree Backend Development Internship**.
 
@@ -20,21 +20,21 @@ The project delivers a scalable, resilient endpoint routing engine designed to e
 
 ---
 
-## 🎯 Task Objectives & Deliverables
+## Task Objectives and Deliverables
 
-| Requirement / Objective             | Architectural Implementation                                                                                   |   Status    |
-| :---------------------------------- | :------------------------------------------------------------------------------------------------------------- | :---------: |
-| **Modern Server Framework**         | Node.js + Express 5 with strict TypeScript compile target (`ES2022`, NodeNext)                                 | ✅ Complete |
-| **Active SQL Connection & Schemas** | PostgreSQL with normalized, indexed relational data models managed via Prisma migrations                       | ✅ Complete |
-| **CRUD Resource Operations**        | Full resource lifecycle (Create, Paginated Read, Update, Soft-Delete) for Users, Projects, Tasks, and Comments | ✅ Complete |
-| **Middleware Data Validation**      | Strict schema validation middleware intercepting `req.body`, `req.query`, and `req.params` via **Zod**         | ✅ Complete |
-| **Secure Data Mutations**           | Soft-deletes (`isDeleted: true`), ACID transactions (`prisma.$transaction`), and strict authorization guards   | ✅ Complete |
+| Requirement | Architectural Implementation | Status |
+| :--- | :--- | :---: |
+| **Modern Server Framework** | Node.js + Express 5 with strict TypeScript (`ES2022`, NodeNext) | ✅ Complete |
+| **Active SQL Connection and Schemas** | PostgreSQL with normalized, indexed relational models via Prisma migrations | ✅ Complete |
+| **CRUD Resource Operations** | Full resource lifecycle for Users, Projects, Tasks, and Comments | ✅ Complete |
+| **Middleware Data Validation** | Zod schema validation intercepting `body`, `query`, and `params` | ✅ Complete |
+| **Secure Data Mutations** | Soft-deletes, ACID transactions, and strict authorization guards | ✅ Complete |
 
 ---
 
-## 🏗️ Clean Layered Architecture
+## Clean Layered Architecture
 
-The system enforces strict **Separation of Concerns (SoC)** through a multi-tier layered architecture:
+The system enforces strict **Separation of Concerns** through a multi-tier layered architecture:
 
 ```text
 src/
@@ -45,96 +45,94 @@ src/
 ├── middlewares/        # Authentication, Authorization, Zod Validation, Rate Limiting, Error Handling
 ├── schemas/            # Declarative Zod runtime schemas
 ├── types/              # Express request augmentations (req.user) & ambient typings
-└── utils/              # ApiError, ApiResponse, and asyncHandler higher-order functions
+└── utils/              # ApiError, ApiResponse, and asyncHandler utilities
 ```
 
 ### Request Lifecycle Pipeline
 
 ```mermaid
 flowchart LR
-    Client([Client HTTP Request]) --> RateLimit[Rate Limiter Middleware]
-    RateLimit --> Helmet[Helmet & CORS Security]
-    Helmet --> Auth[JWT Auth Middleware]
-    Auth --> Validate[Zod Validation Middleware]
-    Validate --> Controller[HTTP Controller]
-    Controller --> Service[Business Logic Service]
-    Service --> DB[(PostgreSQL via Prisma)]
-    DB --> Service
-    Service --> Response[Standardized ApiResponse]
-    Response --> Client
+    A([Client Request]) --> B[Rate Limiter]
+    B --> C[Helmet + CORS]
+    C --> D[JWT Auth Middleware]
+    D --> E[Zod Validation Middleware]
+    E --> F[HTTP Controller]
+    F --> G[Business Logic Service]
+    G --> H[(PostgreSQL via Prisma)]
+    H --> G
+    G --> I[Standardized ApiResponse]
+    I --> A
 
-    Validate -.->|Validation Error| ErrHandler[Centralized Error Handler]
-    Service -.->|Business/DB Error| ErrHandler
-    ErrHandler -.-> Client
+    E -.->|400 Validation Error| J[Global Error Handler]
+    D -.->|401 Unauthorized| J
+    G -.->|Business Error| J
+    J -.-> A
 ```
 
 ---
 
-## 🗄️ Relational Entity-Relationship Model (ERD)
-
-The database schema is fully normalized and indexed to guarantee high-concurrency throughput and relational integrity:
+## Relational Entity-Relationship Model
 
 ```mermaid
 erDiagram
-    USER ||--o{ PROJECT : "owns"
-    USER ||--o{ PROJECT_MEMBER : "participates in"
-    USER ||--o{ TASK : "creates"
-    USER ||--o{ TASK : "assigned to"
-    USER ||--o{ COMMENT : "authors"
-
-    PROJECT ||--o{ PROJECT_MEMBER : "contains"
-    PROJECT ||--o{ TASK : "groups"
-    TASK ||--o{ COMMENT : "threads"
+    USER ||--o{ PROJECT : owns
+    USER ||--o{ PROJECT_MEMBER : joins
+    USER ||--o{ TASK : creates
+    USER ||--o{ TASK : assignedTo
+    USER ||--o{ COMMENT : writes
+    PROJECT ||--o{ PROJECT_MEMBER : has
+    PROJECT ||--o{ TASK : contains
+    TASK ||--o{ COMMENT : threads
 
     USER {
-        string id PK "UUID"
-        string email UK "Unique"
-        string password "BCrypt Hash (12 rounds)"
-        string name "User Full Name"
-        enum role "USER | ADMIN"
-        boolean isActive "Default: true"
+        string id PK
+        string email
+        string password
+        string name
+        string role
+        boolean isActive
         datetime createdAt
         datetime updatedAt
     }
 
     PROJECT {
-        string id PK "UUID"
-        string name "Project Title"
-        string description "Optional text"
-        string ownerId FK "References User.id"
-        boolean isDeleted "Soft Delete Flag"
+        string id PK
+        string name
+        string description
+        string ownerId FK
+        boolean isDeleted
         datetime createdAt
         datetime updatedAt
     }
 
     PROJECT_MEMBER {
-        string id PK "UUID"
-        string projectId FK "References Project.id"
-        string userId FK "References User.id"
-        enum role "OWNER | ADMIN | MEMBER | VIEWER"
+        string id PK
+        string projectId FK
+        string userId FK
+        string role
         datetime createdAt
     }
 
     TASK {
-        string id PK "UUID"
-        string title "Task Title"
-        string description "Task Details"
-        enum status "TODO | IN_PROGRESS | DONE | CANCELLED"
-        enum priority "LOW | MEDIUM | HIGH | URGENT"
-        string projectId FK "References Project.id"
-        string creatorId FK "References User.id"
-        string assigneeId FK "Nullable references User.id"
-        datetime dueDate "Optional ISO"
-        boolean isDeleted "Soft Delete Flag"
+        string id PK
+        string title
+        string description
+        string status
+        string priority
+        string projectId FK
+        string creatorId FK
+        string assigneeId FK
+        datetime dueDate
+        boolean isDeleted
         datetime createdAt
         datetime updatedAt
     }
 
     COMMENT {
-        string id PK "UUID"
-        string content "Comment Content"
-        string taskId FK "References Task.id"
-        string userId FK "References User.id"
+        string id PK
+        string content
+        string taskId FK
+        string userId FK
         datetime createdAt
         datetime updatedAt
     }
@@ -142,79 +140,74 @@ erDiagram
 
 ---
 
-## 🔒 Security & Defensive Engineering
+## Security and Defensive Engineering
 
-1. **Stateless JWT Authentication:**
-   - Tokens signed using `HMAC-SHA256` with configurable expiry (`JWT_EXPIRES_IN`).
-   - Every protected route verifies signature and validates active database user state.
-2. **Defensive Request Validation:**
-   - Pre-controller interception using **Zod** schema parsers.
-   - Rejects malformed bodies, invalid UUIDs, or unauthorized fields with explicit `400 Bad Request` diagnostics.
-3. **Password Security:**
-   - Passwords hashed using **bcryptjs** with **12 salt rounds** prior to persistence.
-4. **Rate Limiting & DDoS Mitigation:**
-   - Custom `express-rate-limit` pipeline restricting abusive client IPs (100 requests / 15 minutes window).
-5. **Security Headers & Sanitization:**
-   - Integrated **Helmet** headers (`X-Content-Type-Options`, `X-Frame-Options`, `Strict-Transport-Security`).
-   - CORS whitelisting support.
-6. **Data Integrity & Auditability:**
-   - High-value resources (Projects, Tasks) implement **Soft Deletes** (`isDeleted: true`) to retain audit histories.
+| Security Layer | Mechanism | Implementation |
+| :--- | :--- | :--- |
+| **Authentication** | Stateless JWT (`HMAC-SHA256`) | `jsonwebtoken` with configurable expiry |
+| **Authorization** | Role-Based Access Control (RBAC) | `ADMIN` vs `USER` vs `ProjectRole` guards |
+| **Password Security** | One-way adaptive hashing | `bcryptjs` with 12 salt rounds |
+| **Request Validation** | Pre-controller schema enforcement | `Zod` schema parsers on `body`, `query`, `params` |
+| **Rate Limiting** | Brute-force and DDoS mitigation | 100 requests / 15 min per IP via `express-rate-limit` |
+| **HTTP Headers** | Secure header injection | `Helmet` (`X-Frame-Options`, `HSTS`, `X-Content-Type`) |
+| **Data Mutations** | Audit trail preservation | Soft-delete (`isDeleted: true`) instead of hard DELETE |
+| **DB Transactions** | Multi-step atomicity | `prisma.$transaction()` for compound operations |
 
 ---
 
-## 📡 API Specification Reference (`/api/v1`)
+## API Specification Reference
 
-All endpoints respond with a consistent, envelope-structured format:
+All endpoints respond with a consistent standardized envelope format.
 
-### 1. Health & Diagnostics
+### Health and Diagnostics
 
-| Method | Endpoint         | Access | Description                                        |
-| :----- | :--------------- | :----: | :------------------------------------------------- |
-| `GET`  | `/api/v1/health` | Public | System uptime, health status, and server timestamp |
+| Method | Endpoint | Auth | Description |
+| :--- | :--- | :---: | :--- |
+| `GET` | `/api/v1/health` | Public | System uptime, health status, and timestamp |
 
-### 2. Authentication
+### Authentication
 
-| Method | Endpoint                | Access | Description                                   |
-| :----- | :---------------------- | :----: | :-------------------------------------------- |
-| `POST` | `/api/v1/auth/register` | Public | Register new user account & issue JWT         |
-| `POST` | `/api/v1/auth/login`    | Public | Authenticate credentials & issue JWT          |
-| `GET`  | `/api/v1/auth/me`       | Bearer | Retrieve currently authenticated user context |
+| Method | Endpoint | Auth | Description |
+| :--- | :--- | :---: | :--- |
+| `POST` | `/api/v1/auth/register` | Public | Register user account and issue signed JWT |
+| `POST` | `/api/v1/auth/login` | Public | Authenticate credentials and issue signed JWT |
+| `GET` | `/api/v1/auth/me` | Bearer | Retrieve currently authenticated user context |
 
-### 3. Projects (Collaborative Boards)
+### Projects
 
-| Method   | Endpoint                               | Access | Description                                               |
-| :------- | :------------------------------------- | :----: | :-------------------------------------------------------- |
-| `POST`   | `/api/v1/projects`                     | Bearer | Create a new project (Creator assigned as `OWNER`)        |
-| `GET`    | `/api/v1/projects`                     | Bearer | List projects where user is owner or member               |
-| `GET`    | `/api/v1/projects/:id`                 | Bearer | Fetch complete project graph (Owner, Members, Tasks)      |
-| `PATCH`  | `/api/v1/projects/:id`                 | Bearer | Update project title / description (`OWNER`/`ADMIN` only) |
-| `DELETE` | `/api/v1/projects/:id`                 | Bearer | Soft-delete project and archive board                     |
-| `POST`   | `/api/v1/projects/:id/members`         | Bearer | Add team member with custom role (`MEMBER`, `ADMIN`)      |
-| `DELETE` | `/api/v1/projects/:id/members/:userId` | Bearer | Remove member from project                                |
+| Method | Endpoint | Auth | Description |
+| :--- | :--- | :---: | :--- |
+| `POST` | `/api/v1/projects` | Bearer | Create project — creator auto-assigned as `OWNER` |
+| `GET` | `/api/v1/projects` | Bearer | List all projects where user is owner or member |
+| `GET` | `/api/v1/projects/:id` | Bearer | Fetch project graph with owner, members, and tasks |
+| `PATCH` | `/api/v1/projects/:id` | Bearer | Update project name or description |
+| `DELETE` | `/api/v1/projects/:id` | Bearer | Soft-delete and archive project board |
+| `POST` | `/api/v1/projects/:id/members` | Bearer | Add team member with custom role |
+| `DELETE` | `/api/v1/projects/:id/members/:userId` | Bearer | Remove member from project |
 
-### 4. Tasks (Resource CRUD Engine)
+### Tasks
 
-| Method   | Endpoint            | Access | Description                                                   |
-| :------- | :------------------ | :----: | :------------------------------------------------------------ |
-| `POST`   | `/api/v1/tasks`     | Bearer | Create task card attached to a project                        |
-| `GET`    | `/api/v1/tasks`     | Bearer | Query paginated tasks (`?projectId=&page=1&limit=10&status=`) |
-| `GET`    | `/api/v1/tasks/:id` | Bearer | Retrieve task detail with creator, assignee & comments        |
-| `PATCH`  | `/api/v1/tasks/:id` | Bearer | Secure partial update (status mutation, priority, due date)   |
-| `DELETE` | `/api/v1/tasks/:id` | Bearer | Soft-delete task (preserves audit records)                    |
+| Method | Endpoint | Auth | Description |
+| :--- | :--- | :---: | :--- |
+| `POST` | `/api/v1/tasks` | Bearer | Create task card attached to a project |
+| `GET` | `/api/v1/tasks` | Bearer | Query tasks with pagination, filtering, and sorting |
+| `GET` | `/api/v1/tasks/:id` | Bearer | Retrieve task with creator, assignee, and comments |
+| `PATCH` | `/api/v1/tasks/:id` | Bearer | Partial update: status, priority, due date, assignee |
+| `DELETE` | `/api/v1/tasks/:id` | Bearer | Soft-delete task (preserves audit records) |
 
-### 5. Comments (Communication Pipeline)
+### Comments
 
-| Method   | Endpoint                             | Access | Description                                |
-| :------- | :----------------------------------- | :----: | :----------------------------------------- |
-| `POST`   | `/api/v1/tasks/:taskId/comments`     | Bearer | Create discussion comment on task          |
-| `GET`    | `/api/v1/tasks/:taskId/comments`     | Bearer | List threaded comments with author details |
-| `DELETE` | `/api/v1/tasks/:taskId/comments/:id` | Bearer | Delete comment (Author or Admin only)      |
+| Method | Endpoint | Auth | Description |
+| :--- | :--- | :---: | :--- |
+| `POST` | `/api/v1/tasks/:taskId/comments` | Bearer | Post discussion comment on a task |
+| `GET` | `/api/v1/tasks/:taskId/comments` | Bearer | Retrieve threaded comments with author details |
+| `DELETE` | `/api/v1/tasks/:taskId/comments/:id` | Bearer | Delete comment (author or Admin only) |
 
 ---
 
-## 📦 Standard Envelope Payload Format
+## Standardized Envelope Payload Format
 
-### Successful Response (`200 OK` / `201 Created`)
+### Success Response (`200 OK` / `201 Created`)
 
 ```json
 {
@@ -227,12 +220,8 @@ All endpoints respond with a consistent, envelope-structured format:
       "title": "Design Checkout Flow",
       "status": "IN_PROGRESS",
       "priority": "HIGH",
-      "projectId": "f20c24a9-2291-49eb-a749-48dfe1dd1cb7",
-      "creator": {
-        "id": "c205d48e-c98e-4fa2-b8e3-b777ce442c18",
-        "name": "Project Lead",
-        "email": "lead@company.com"
-      },
+      "project": { "id": "f20c24a9-...", "name": "E-Commerce App Redesign" },
+      "creator": { "id": "c205d48e-...", "name": "Project Lead", "email": "lead@company.com" },
       "_count": { "comments": 1 }
     }
   ],
@@ -255,73 +244,104 @@ All endpoints respond with a consistent, envelope-structured format:
   "statusCode": 400,
   "message": "Validation Failed",
   "errors": [
-    {
-      "field": "body.email",
-      "message": "Invalid email address format"
-    },
-    {
-      "field": "body.password",
-      "message": "Password must be at least 6 characters long"
-    }
+    { "field": "body.email", "message": "Invalid email address format" },
+    { "field": "body.password", "message": "Password must be at least 6 characters long" }
   ]
+}
+```
+
+### Unauthorized (`401`)
+
+```json
+{
+  "success": false,
+  "statusCode": 401,
+  "message": "Authentication token is missing or malformed",
+  "errors": []
 }
 ```
 
 ---
 
-## ⚡ Local Setup & Execution Guide
+## Local Setup and Execution Guide
 
-### 1. Clone Repository & Install Dependencies
+### Prerequisites
+- Node.js v18 or higher
+- PostgreSQL v14 or higher
+- npm
 
-```powershell
+### 1. Clone and Install
+
+```bash
 git clone https://github.com/imtiazaly/Progree_secure_rest_api_engine.git
 cd Progree_secure_rest_api_engine
 npm install
 ```
 
-### 2. Configure Environment Variables
+### 2. Configure Environment
 
-Copy `.env.example` into `.env`:
-
-```powershell
+```bash
 cp .env.example .env
 ```
 
-Ensure your database connection string and secret key are properly set:
+Update `.env` with your credentials:
 
 ```env
 PORT=5000
 NODE_ENV=development
 DATABASE_URL="postgresql://postgres:YOUR_PASSWORD@localhost:5432/secure_rest_api_engine?schema=public"
-JWT_SECRET="super_secure_jwt_secret_key_min_8_chars"
+JWT_SECRET="your_super_secure_jwt_secret_min_8_chars"
 JWT_EXPIRES_IN="1d"
 ```
 
 ### 3. Run Database Migrations
 
-Synchronize schema with PostgreSQL:
-
-```powershell
+```bash
 npx prisma migrate dev
 ```
 
-### 4. Start the Application Engine
+### 4. Start Server
 
-```powershell
-# Development mode with hot-reloading (via tsx watch)
+```bash
+# Development with hot reload
 npm run dev
 
-# Production build & execution
+# Production build
 npm run build
 npm start
 ```
 
+The server starts on `http://localhost:5000`
+Health check: `http://localhost:5000/api/v1/health`
+
 ---
 
-## 👨‍💻 Developer & Attribution
+## Technology Stack
+
+| Layer | Technology | Version |
+| :--- | :--- | :--- |
+| Runtime | Node.js | v18+ |
+| Language | TypeScript | 5.x |
+| Web Framework | Express.js | 5.x |
+| Database | PostgreSQL | 14+ |
+| ORM | Prisma | 6.x |
+| Validation | Zod | 4.x |
+| Authentication | JSON Web Token | 9.x |
+| Password Hashing | bcryptjs | 3.x |
+| Security Headers | Helmet | 8.x |
+| Rate Limiting | express-rate-limit | 8.x |
+| Dev Runtime | tsx watch | 4.x |
+
+---
+
+## Developer and Attribution
 
 - **Developer:** Imtiaz Aly
 - **Program:** Progree Internship Program
 - **Track:** Backend Development
-- **Module:** Task 2 — Secured RESTful CRUD API Server with Relational Database
+- **Task:** Task 2 — Secured RESTful CRUD API Server with Relational Database
 - **Repository:** [Progree_secure_rest_api_engine](https://github.com/imtiazaly/Progree_secure_rest_api_engine)
+
+---
+
+Licensed under the [MIT License](LICENSE)
