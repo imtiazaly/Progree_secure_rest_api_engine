@@ -13,6 +13,8 @@ export const createTaskSchema = z.object({
       .string()
       .datetime({ message: "Invalid ISO datetime string" })
       .optional(),
+    projectId: z.string().uuid("Valid projectId is required"),
+    assigneeId: z.string().uuid("Invalid assignee ID").optional().nullable(),
   }),
 });
 
@@ -27,6 +29,7 @@ export const updateTaskSchema = z.object({
       status: taskStatusEnum.optional(),
       priority: priorityEnum.optional(),
       dueDate: z.string().datetime().optional().nullable(),
+      assigneeId: z.string().uuid("Invalid assignee ID").optional().nullable(),
     })
     .refine((data) => Object.keys(data).length > 0, {
       message: "At least one field must be provided for update",
@@ -51,6 +54,7 @@ export const queryTasksSchema = z.object({
       .optional()
       .default("10")
       .transform((val) => Math.min(100, Math.max(1, parseInt(val, 10) || 10))),
+    projectId: z.string().uuid("Invalid projectId").optional(),
     status: taskStatusEnum.optional(),
     priority: priorityEnum.optional(),
     search: z.string().optional(),
