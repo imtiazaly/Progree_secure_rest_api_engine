@@ -1,5 +1,6 @@
 import { Router } from "express";
 import { TaskController } from "../controllers/task.controller.js";
+import { commentRoutes } from "./comment.routes.js";
 import { authenticate } from "../middlewares/auth.middleware.js";
 import { validate } from "../middlewares/validate.middleware.js";
 import {
@@ -11,8 +12,10 @@ import {
 
 const router = Router();
 
-// Saare Task endpoints authenticated hone chahiye
 router.use(authenticate);
+
+// Nested Comments Router: /api/v1/tasks/:taskId/comments
+router.use("/:taskId/comments", commentRoutes);
 
 router
   .route("/")
