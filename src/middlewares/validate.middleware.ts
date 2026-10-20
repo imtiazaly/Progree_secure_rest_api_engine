@@ -12,10 +12,22 @@ export const validate =
         params: req.params,
       });
 
-      // Validated aur sanitized data assign karein
-      req.body = (parsed as any).body ?? req.body;
-      req.query = (parsed as any).query ?? req.query;
-      req.params = (parsed as any).params ?? req.params;
+      // Express 5 compatible assignment (mutates properties safely)
+      if ((parsed as any).body !== undefined) {
+        req.body = (parsed as any).body;
+      }
+      if (
+        (parsed as any).query !== undefined &&
+        typeof req.query === "object"
+      ) {
+        Object.assign(req.query, (parsed as any).query);
+      }
+      if (
+        (parsed as any).params !== undefined &&
+        typeof req.params === "object"
+      ) {
+        Object.assign(req.params, (parsed as any).params);
+      }
 
       next();
     } catch (error) {
