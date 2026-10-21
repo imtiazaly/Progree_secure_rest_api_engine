@@ -33,7 +33,7 @@ export class AuthService {
         email: input.email,
         password: hashedPassword,
         name: input.name,
-        role: Role.USER,
+        role: Role.USER, // Har naya user hamesha USER banega
       },
       select: {
         id: true,
