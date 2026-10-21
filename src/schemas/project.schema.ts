@@ -1,6 +1,6 @@
 import { z } from "zod";
 
-const projectRoleEnum = z.enum(["OWNER", "ADMIN", "MEMBER", "VIEWER"]);
+const projectRoleEnum = z.enum(["ADMIN", "MEMBER", "VIEWER"]);
 
 export const createProjectSchema = z.object({
   body: z.object({

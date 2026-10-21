@@ -153,6 +153,16 @@ export class ProjectService {
         "Forbidden: Insufficient permissions to add members",
       );
 
+    const canGiveAdmin =
+      user.role === Role.ADMIN || member?.role === ProjectRole.OWNER;
+
+    if (role === ProjectRole.ADMIN && !canGiveAdmin) {
+      throw new ApiError(
+        403,
+        "Forbidden: Only the project owner can assign the ADMIN role",
+      );
+    }
+
     const targetUser = await prisma.user.findUnique({
       where: { id: targetUserId },
     });
